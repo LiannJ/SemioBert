@@ -13,7 +13,7 @@ class Tokenizer:
         This class hold the tokenizer and helper functions to make
         it easier and more intuitive for the use case in this work
     """
-    def __init__(self, tokenizer : AutoTokenizer | Callable | Any = None):
+    def __init__(self, tokenizer = None):
         """
             initialize with the main tokenizer object
 
@@ -66,12 +66,12 @@ class Tokenizer:
 class TFModel:
     def __init__(self, model_name: str):
         self.model = TFAutoModelForSequenceClassification.from_pretrained(model_name)
-        self.metrics = [tf.keras.SparseCategoricalAccuracy('accuracy', dtype=tf.float32)]
+        self.metrics = [tf.keras.metrics.SparseCategoricalAccuracy('accuracy', dtype=tf.float32)]
         self.loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
 
     def compile(
         self,
-        optimizer : str | Any ,
+        optimizer,
         # loss_func: str | Any,
         # metrics: Any
         ):
@@ -131,38 +131,39 @@ class Optimizer:
         return optimizer
 
 
-class ExportModel(tf.Module):
-    def __init__(self, input_processor, classifier):
-        self.input_processor = input_processor
-        self.classifier = classifier
-
-    @tf.function(
-        input_signature = [{
-            "sentence" : tf.TensorSpec(shape=[None], dtype=tf.string)
-        }]
-    )
-    def __call__(self,inputs,labels):
-        packed = self.input_processor(inputs)
-        logits = self.classifier(packed, training=False)
-        result_cls_ids = tf.argmax(logits)
-
-        return {
-            'logits' : logits,
-            'class_id' : result_cls_ids,
-            "class" : tf.gather(
-                tf.constant(labels),
-                result_cls_ids
-            )
-        }
-
-
-
+# class ExportModel(tf.Module):
+#     def __init__(self, input_processor, classifier):
+#         self.input_processor = input_processor
+#         self.classifier = classifier
+#
+#     @tf.function(
+#         input_signature = [{
+#             "sentence" : tf.TensorSpec(shape=[None], dtype=tf.string)
+#         }]
+#     )
+#     def __call__(self,inputs,labels):
+#
+#         packed = self.input_processor(inputs)
+#         logits = self.classifier(packed, training=False)
+#         result_cls_ids = tf.argmax(logits)
+#
+#         return {
+#             'logits' : logits,
+#             'class_id' : result_cls_ids,
+#             "class" : tf.gather(
+#                 tf.constant(labels),
+#                 result_cls_ids
+#             )
+#         }
 
 
 
-def export_model(model,model_name):
-    export_dir = os.mkdir(f"../result/tf_saved_model_{model_name}")
-    tf.saved_model.save(export_model, export_dir=export_dir,
-                        signatures={"serving_default" : export_model.__call__}] 
+
+
+
+# def export_model(model,model_name):
+#     export_dir = os.mkdir(f"../result/tf_saved_model_{model_name}")
+#     tf.saved_model.save(export_model, export_dir=export_dir,
+#                         signatures={"serving_default" : export_model.__call__}) 
 
 

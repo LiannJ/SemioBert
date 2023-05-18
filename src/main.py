@@ -1,8 +1,10 @@
-from BerTimbau import TFModel, Tokenizer, Optimizer, ExportModel, export_model
-from DataLoading import DataModel
+from BerTimbau import TFModel, Tokenizer, Optimizer #ExportModel, export_model
+from DataLoading import ModelData
 import pandas as pd
 import os
 import datetime
+import tensorflow as tf
+import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import ModelCheckpoint
 
@@ -37,10 +39,12 @@ def main():
 
 
     #Data loading
-    main_data = DataModel(
+    main_data = ModelData(
         os.path.join(DATA_PATH, "trainingAppreciative.csv")
     )
-    train_X, train_labels, test_X, test_labels = main_data.get_train_test_splits()
+    train_X, test_X,train_labels, test_labels = main_data.get_train_test_splits()
+    train_X = np.array(train_X)
+    train_labels = np.array(train_labels)
 
 
     train_data = []
@@ -60,12 +64,12 @@ def main():
         save_best_only=True,
         verbose=1
     )
-    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=TENSORBOARD_DIR, histogram_freq=1)
 
 
     #create the wrapper hugging face transformer model
     model = TFModel("neuralmind/bert-base-portuguese-cased")
-    #compile wrappe
+    #compile wrapper
     model.compile(optimizer)
     #training step
     history = model.fit(train_X,train_labels,callbacks=[checkpoint,tensorboard_callback])

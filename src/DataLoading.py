@@ -16,8 +16,11 @@ class ModelData:
         dataframe = pd.read_csv(self.filename, sep=sep)
         return Dataset.from_pandas(dataframe)
 
-    def get_train_test_splits(self,X_name :str = "sentences" , y_name  : str ="apreciative"
+    def get_train_test_splits(self, 
+                              X_name :str = "sentence" ,
+                              y_name  : str ="appreciative",
                               test_size : float = 0.2):
+
         return train_test_split( self.dataset[X_name] , self.dataset[y_name], test_size=test_size, shuffle=True) 
     
 
