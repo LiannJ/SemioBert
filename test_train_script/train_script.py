@@ -8,6 +8,8 @@ from tensorflow.keras.optimizers import Adam
 
 
 from datasets import load_dataset
+
+import datetime
 from datasets import Dataset
 
 
@@ -29,6 +31,8 @@ tokenized_test_data = dict(tokenized_test_data)
 
 
 
+log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 labels = np.array(dataset["appreciative"])
 labels_test = np.array(dataset_test["appreciative"])
@@ -37,9 +41,8 @@ labels_test = np.array(dataset_test["appreciative"])
 model = TFAutoModelForSequenceClassification.from_pretrained("neuralmind/bert-base-portuguese-cased")
 model.compile(optimizer=Adam(3e-5))
 
-model.fit(tokenized_data, labels)
+model.fit(tokenized_data, labels,validation_data=(tokenized_test_data, labels_test),callbacks=[tensorboard_callback])
 
 
-model.evaluate(tokenized_test_data, labels_test)
 model.save_pretrained("tensorflow-test/appreciative")
 
